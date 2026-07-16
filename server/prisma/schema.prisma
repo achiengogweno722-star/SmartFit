@@ -1,0 +1,218 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TRAINER
+  MEMBER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum FitnessLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum FitnessGoal {
+  WEIGHT_LOSS
+  MUSCLE_GAIN
+  STRENGTH
+  ENDURANCE
+  GENERAL_FITNESS
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  fullName String
+  email    String @unique
+  password String
+  role     Role   @default(MEMBER)
+
+  memberProfile  MemberProfile?
+  trainerProfile TrainerProfile?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MemberProfile {
+  id     Int @id @default(autoincrement())
+  userId Int @unique
+
+  gender      Gender
+  dateOfBirth DateTime
+  height      Float
+  weight      Float
+  bmi         Float?
+
+  fitnessLevel FitnessLevel
+  fitnessGoal  FitnessGoal
+
+  availableDaysPerWeek Int
+  preferredWorkoutTime String?
+
+  medicalConditions String?
+  phoneNumber       String?
+  address           String?
+  emergencyContact  String?
+
+  // Assigned Trainer
+  trainerId Int?
+
+  // Assigned Workout Plan
+  workoutPlanId Int?
+
+  user        User            @relation(fields: [userId], references: [id])
+  trainer     TrainerProfile? @relation(fields: [trainerId], references: [id])
+  workoutPlan WorkoutPlan?    @relation(fields: [workoutPlanId], references: [id])
+
+  // Recommendations
+  recommendations Recommendation[]
+
+  // Progress Logs
+  progressLogs ProgressLog[]
+
+  // Workout Logs
+  workoutLogs WorkoutLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TrainerProfile {
+  id     Int @id @default(autoincrement())
+  userId Int @unique
+
+  specialization String
+  experience     Int
+  phoneNumber    String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  members MemberProfile[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WorkoutPlan {
+  id          Int    @id @default(autoincrement())
+  name        String
+  description String
+
+  category   String
+  targetGoal FitnessGoal
+
+  difficulty FitnessLevel
+
+  duration Int
+  calories Int
+
+  equipmentRequired Boolean @default(false)
+  sessionsPerWeek   Int
+  estimatedWeeks    Int
+  isActive          Boolean @default(true)
+
+  members MemberProfile[]
+
+  // Recommendations
+  recommendations Recommendation[]
+
+  // Workout Logs
+  workoutLogs WorkoutLog[]
+
+  // Exercises
+  exercises Exercise[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Exercise {
+  id Int @id @default(autoincrement())
+
+  workoutPlanId Int
+
+  name        String
+  description String
+
+  sets Int
+
+  reps Int?
+
+  durationSeconds Int?
+
+  restSeconds Int
+
+  difficulty FitnessLevel
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workoutPlan WorkoutPlan @relation(fields: [workoutPlanId], references: [id])
+}
+
+model Recommendation {
+  id Int @id @default(autoincrement())
+
+  memberId      Int
+  workoutPlanId Int
+
+  recommendationScore Float
+  reason              String
+
+  member      MemberProfile @relation(fields: [memberId], references: [id])
+  workoutPlan WorkoutPlan   @relation(fields: [workoutPlanId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model ProgressLog {
+  id Int @id @default(autoincrement())
+
+  memberId Int
+
+  weight Float
+  bmi    Float
+
+  notes String?
+
+  createdAt DateTime @default(now())
+
+  member MemberProfile @relation(fields: [memberId], references: [id])
+}
+
+model WorkoutLog {
+  id Int @id @default(autoincrement())
+
+  memberId      Int
+  workoutPlanId Int
+
+  completed Boolean @default(false)
+
+  durationCompleted Int?
+
+  caloriesBurned Int?
+
+  notes String?
+
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  member MemberProfile @relation(fields: [memberId], references: [id])
+
+  workoutPlan WorkoutPlan @relation(fields: [workoutPlanId], references: [id])
+}
