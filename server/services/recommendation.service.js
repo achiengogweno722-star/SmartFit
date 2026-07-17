@@ -1,16 +1,18 @@
 import prisma from "../config/prisma.js";
 
 export const generateRecommendations = async (memberId) => {
-  // Get member profile
+  // Find member
   const member = await prisma.memberProfile.findUnique({
-    where: { id: Number(memberId) },
+    where: {
+      id: Number(memberId),
+    },
   });
 
   if (!member) {
     throw new Error("Member not found.");
   }
 
-  // Get all active workout plans
+  // Get active workout plans
   const workoutPlans = await prisma.workoutPlan.findMany({
     where: {
       isActive: true,
@@ -19,43 +21,59 @@ export const generateRecommendations = async (memberId) => {
 
   const recommendations = [];
 
+  // Remove old recommendations
+  await prisma.recommendation.deleteMany({
+    where: {
+      memberId: member.id,
+    },
+  });
+
   for (const plan of workoutPlans) {
     let score = 0;
     const reasons = [];
 
-    // Goal Match
+    // Fitness Goal
     if (plan.targetGoal === member.fitnessGoal) {
       score += 40;
       reasons.push("Fitness goal matches");
     }
 
-    // Fitness Level Match
+    // Fitness Level
     if (plan.difficulty === member.fitnessLevel) {
       score += 30;
       reasons.push("Fitness level matches");
     }
 
-    // Workout Days Match
+    // Available Days
     if (plan.sessionsPerWeek <= member.availableDaysPerWeek) {
       score += 20;
       reasons.push("Fits your weekly schedule");
     }
 
-    // Equipment Match
+    // Equipment
     if (!plan.equipmentRequired) {
       score += 10;
       reasons.push("No equipment required");
     }
 
-    recommendations.push({
-      workoutPlanId: plan.id,
-      workoutName: plan.name,
-      score,
-      reason: reasons.join(", "),
+    const recommendation = await prisma.recommendation.create({
+      data: {
+        memberId: member.id,
+        workoutPlanId: plan.id,
+        recommendationScore: score,
+        reason: reasons.join(", "),
+      },
+      include: {
+        workoutPlan: true,
+      },
     });
+
+    recommendations.push(recommendation);
   }
 
-  recommendations.sort((a, b) => b.score - a.score);
+  recommendations.sort(
+    (a, b) => b.recommendationScore - a.recommendationScore
+  );
 
   return recommendations;
 };

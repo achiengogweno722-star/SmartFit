@@ -33,6 +33,12 @@ enum FitnessGoal {
   GENERAL_FITNESS
 }
 
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+}
+
 model User {
   id       Int    @id @default(autoincrement())
   fullName String
@@ -78,8 +84,11 @@ model MemberProfile {
   trainer     TrainerProfile? @relation(fields: [trainerId], references: [id])
   workoutPlan WorkoutPlan?    @relation(fields: [workoutPlanId], references: [id])
 
-  // Recommendations
+  // Workout Recommendations
   recommendations Recommendation[]
+
+  // Nutrition Recommendations
+  nutritionRecommendations NutritionRecommendation[]
 
   // Progress Logs
   progressLogs ProgressLog[]
@@ -87,8 +96,16 @@ model MemberProfile {
   // Workout Logs
   workoutLogs WorkoutLog[]
 
+  // Attendance
+  attendances Attendance[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([trainerId])
+  @@index([workoutPlanId])
+  @@index([fitnessGoal])
+  @@index([fitnessLevel])
 }
 
 model TrainerProfile {
@@ -105,6 +122,8 @@ model TrainerProfile {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([specialization])
 }
 
 model WorkoutPlan {
@@ -127,17 +146,18 @@ model WorkoutPlan {
 
   members MemberProfile[]
 
-  // Recommendations
   recommendations Recommendation[]
 
-  // Workout Logs
   workoutLogs WorkoutLog[]
 
-  // Exercises
   exercises Exercise[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([difficulty])
+  @@index([targetGoal])
+  @@index([isActive])
 }
 
 model Exercise {
@@ -161,7 +181,9 @@ model Exercise {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  workoutPlan WorkoutPlan @relation(fields: [workoutPlanId], references: [id])
+  workoutPlan WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+
+  @@index([workoutPlanId])
 }
 
 model Recommendation {
@@ -173,10 +195,56 @@ model Recommendation {
   recommendationScore Float
   reason              String
 
-  member      MemberProfile @relation(fields: [memberId], references: [id])
-  workoutPlan WorkoutPlan   @relation(fields: [workoutPlanId], references: [id])
+  member MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  workoutPlan WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+
+  @@index([memberId])
+}
+
+model MealPlan {
+  id Int @id @default(autoincrement())
+
+  name String
+
+  goal FitnessGoal
+
+  calories Int
+
+  breakfast String
+
+  lunch String
+
+  dinner String
+
+  snacks String?
+
+  isActive Boolean @default(true)
+
+  recommendations NutritionRecommendation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NutritionRecommendation {
+  id Int @id @default(autoincrement())
+
+  memberId   Int
+  mealPlanId Int
+
+  recommendationScore Float
+  reason              String
+
+  member MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  mealPlan MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([memberId])
 }
 
 model ProgressLog {
@@ -187,11 +255,17 @@ model ProgressLog {
   weight Float
   bmi    Float
 
+  bodyFat Float?
+
+  muscleMass Float?
+
   notes String?
+
+  member MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
-  member MemberProfile @relation(fields: [memberId], references: [id])
+  @@index([memberId])
 }
 
 model WorkoutLog {
@@ -201,6 +275,8 @@ model WorkoutLog {
   workoutPlanId Int
 
   completed Boolean @default(false)
+
+  completionPercentage Int?
 
   durationCompleted Int?
 
@@ -212,7 +288,28 @@ model WorkoutLog {
 
   createdAt DateTime @default(now())
 
-  member MemberProfile @relation(fields: [memberId], references: [id])
+  member MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
-  workoutPlan WorkoutPlan @relation(fields: [workoutPlanId], references: [id])
+  workoutPlan WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+
+  @@index([memberId])
+  @@index([workoutPlanId])
+}
+
+model Attendance {
+  id Int @id @default(autoincrement())
+
+  memberId Int
+
+  checkIn DateTime @default(now())
+
+  checkOut DateTime?
+
+  status AttendanceStatus @default(PRESENT)
+
+  member MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([memberId])
 }

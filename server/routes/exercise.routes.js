@@ -1,5 +1,7 @@
 import express from "express";
 
+console.log("✅ exercise.routes.js loaded");
+
 import {
   createExerciseHandler,
   getAllExercises,
@@ -15,6 +17,16 @@ import {
 } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
+
+// =========================
+// Debug Test Route
+// =========================
+router.get("/test", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Exercise routes are working!",
+  });
+});
 
 // =========================
 // Authenticated Routes

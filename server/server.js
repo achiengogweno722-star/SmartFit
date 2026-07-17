@@ -11,6 +11,10 @@ import recommendationRoutes from "./routes/recommendation.routes.js";
 import progressRoutes from "./routes/progress.routes.js";
 import workoutLogRoutes from "./routes/workoutLog.routes.js";
 import adminDashboardRoutes from "./routes/adminDashboard.routes.js";
+import exerciseRoutes from "./routes/exercise.routes.js";
+import mealRoutes from "./routes/meal.routes.js";
+import nutritionRecommendationRoutes from "./routes/nutritionRecommendation.routes.js";
+import attendanceRoutes from "./routes/attendance.routes.js";
 
 dotenv.config();
 
@@ -30,6 +34,13 @@ app.use("/api/recommendations", recommendationRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/workout-logs", workoutLogRoutes);
 app.use("/api/dashboard", adminDashboardRoutes);
+app.use("/api/exercises", exerciseRoutes);
+app.use("/api/meals", mealRoutes);
+app.use(
+  "/api/nutrition-recommendations",
+  nutritionRecommendationRoutes
+);
+app.use("/api/attendance", attendanceRoutes);
 
 // Health Check Route
 app.get("/api/health", (req, res) => {

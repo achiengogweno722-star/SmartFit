@@ -1,8 +1,14 @@
 import express from "express";
 import { getRecommendations } from "../controllers/recommendation.controller.js";
+import { authenticate } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/:memberId", getRecommendations);
+// Generate workout recommendations for a member
+router.get(
+  "/:memberId",
+  authenticate,
+  getRecommendations
+);
 
 export default router;
