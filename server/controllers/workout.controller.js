@@ -12,7 +12,9 @@ import {
   updateWorkoutSchema,
 } from "../validations/workout.validation.js";
 
+// ==============================
 // Create Workout
+// ==============================
 export const createWorkoutPlan = async (req, res) => {
   try {
     const validatedData = workoutSchema.parse(req.body);
@@ -32,7 +34,9 @@ export const createWorkoutPlan = async (req, res) => {
   }
 };
 
+// ==============================
 // Get All Workouts
+// ==============================
 export const getWorkouts = async (req, res) => {
   try {
     const workouts = await getAllWorkouts();
@@ -50,20 +54,28 @@ export const getWorkouts = async (req, res) => {
   }
 };
 
+// ==============================
 // Get Workout By ID
+// ==============================
 export const getWorkout = async (req, res) => {
-  console.log("========== GET WORKOUT ==========");
-  console.log("Method:", req.method);
-  console.log("URL:", req.originalUrl);
-  console.log("Params:", req.params);
+  try {
+    const workout = await getWorkoutById(Number(req.params.id));
 
-  return res.status(200).json({
-    success: true,
-    message: "Reached getWorkout controller",
-  });
+    res.status(200).json({
+      success: true,
+      workout,
+    });
+  } catch (error) {
+    res.status(404).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
+// ==============================
 // Update Workout
+// ==============================
 export const updateWorkoutPlan = async (req, res) => {
   try {
     const validatedData = updateWorkoutSchema.parse(req.body);
@@ -86,7 +98,9 @@ export const updateWorkoutPlan = async (req, res) => {
   }
 };
 
+// ==============================
 // Delete Workout
+// ==============================
 export const removeWorkout = async (req, res) => {
   try {
     const result = await deleteWorkout(Number(req.params.id));
@@ -102,7 +116,10 @@ export const removeWorkout = async (req, res) => {
     });
   }
 };
+
+// ==============================
 // Assign Workout to Member
+// ==============================
 export const assignWorkout = async (req, res) => {
   try {
     const workoutId = Number(req.params.workoutId);

@@ -11,7 +11,30 @@ import {
 
 const router = express.Router();
 
-// Get all trainers
+/**
+ * @swagger
+ * tags:
+ *   name: Trainers
+ *   description: Trainer Management APIs
+ */
+
+/**
+ * @swagger
+ * /api/trainers:
+ *   get:
+ *     summary: Get all trainers
+ *     description: Retrieve all registered trainers.
+ *     tags: [Trainers]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Trainers retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
 router.get(
   "/",
   authenticate,
@@ -19,7 +42,44 @@ router.get(
   getTrainers
 );
 
-// Trainer creates own profile
+/**
+ * @swagger
+ * /api/trainers/profile:
+ *   post:
+ *     summary: Create trainer profile
+ *     description: Allows an authenticated trainer to create their profile.
+ *     tags: [Trainers]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - specialization
+ *               - experience
+ *             properties:
+ *               specialization:
+ *                 type: string
+ *                 example: Strength Training
+ *               experience:
+ *                 type: integer
+ *                 example: 5
+ *               phoneNumber:
+ *                 type: string
+ *                 example: "+254712345678"
+ *     responses:
+ *       201:
+ *         description: Trainer profile created successfully
+ *       400:
+ *         description: Invalid request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
 router.post(
   "/profile",
   authenticate,

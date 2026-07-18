@@ -23,7 +23,13 @@ export const createProfile = async (req, res) => {
       profile,
     });
   } catch (error) {
-    res.status(400).json({
+    let status = 400;
+
+    if (error.message === "Member profile already exists.") {
+      status = 409;
+    }
+
+    res.status(status).json({
       success: false,
       message: error.message,
     });
@@ -40,7 +46,9 @@ export const getProfile = async (req, res) => {
       profile,
     });
   } catch (error) {
-    res.status(404).json({
+    let status = 404;
+
+    res.status(status).json({
       success: false,
       message: error.message,
     });
@@ -60,7 +68,13 @@ export const updateProfile = async (req, res) => {
       profile,
     });
   } catch (error) {
-    res.status(400).json({
+    let status = 400;
+
+    if (error.message === "Member profile not found.") {
+      status = 404;
+    }
+
+    res.status(status).json({
       success: false,
       message: error.message,
     });
@@ -83,7 +97,16 @@ export const assignTrainerToMember = async (req, res) => {
       member,
     });
   } catch (error) {
-    res.status(400).json({
+    let status = 400;
+
+    if (
+      error.message === "Member profile not found." ||
+      error.message === "Trainer profile not found."
+    ) {
+      status = 404;
+    }
+
+    res.status(status).json({
       success: false,
       message: error.message,
     });

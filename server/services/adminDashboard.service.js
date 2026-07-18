@@ -11,7 +11,11 @@ export const getDashboardStatistics = async () => {
   const totalWorkoutPlans = await prisma.workoutPlan.count();
 
   // Total Workout Completions
-  const totalWorkoutCompletions = await prisma.workoutLog.count();
+  const totalWorkoutCompletions = await prisma.workoutLog.count({
+  where: {
+    completed: true,
+  },
+});
 
   // Total Calories Burned
   const calories = await prisma.workoutLog.aggregate({
@@ -36,17 +40,20 @@ export const getDashboardStatistics = async () => {
 
   // Most Popular Workout
   const popularWorkout = await prisma.workoutLog.groupBy({
-    by: ["workoutPlanId"],
+  by: ["workoutPlanId"],
+  where: {
+    completed: true,
+  },
+  _count: {
+    workoutPlanId: true,
+  },
+  orderBy: {
     _count: {
-      workoutPlanId: true,
+      workoutPlanId: "desc",
     },
-    orderBy: {
-      _count: {
-        workoutPlanId: "desc",
-      },
-    },
-    take: 1,
-  });
+  },
+  take: 1,
+});
 
   let mostPopularWorkout = "No workouts completed";
 

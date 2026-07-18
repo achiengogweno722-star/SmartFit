@@ -1,10 +1,10 @@
 import prisma from "../config/prisma.js";
 
 export const generateNutritionRecommendations = async (memberId) => {
-  // Find member
+  // Find member profile using the USER ID
   const member = await prisma.memberProfile.findUnique({
     where: {
-      id: Number(memberId),
+      userId: Number(memberId),
     },
   });
 
@@ -37,7 +37,6 @@ export const generateNutritionRecommendations = async (memberId) => {
       reasons.push("Matches your fitness goal");
     }
 
-    // Save recommendation
     await prisma.nutritionRecommendation.create({
       data: {
         memberId: member.id,

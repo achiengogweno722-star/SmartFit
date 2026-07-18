@@ -70,3 +70,26 @@ export const getMealPlansByGoal = async (goal) => {
     },
   });
 };
+// Recommend Meal Plan By Member Goal
+export const recommendMealPlan = async (fitnessGoal) => {
+  const mealPlans = await prisma.mealPlan.findMany({
+    where: {
+      goal: fitnessGoal,
+      isActive: true,
+    },
+    orderBy: [
+      {
+        calories: "asc",
+      },
+      {
+        createdAt: "desc",
+      },
+    ],
+  });
+
+  if (mealPlans.length === 0) {
+    throw new Error("No meal plans available for this fitness goal.");
+  }
+
+  return mealPlans[0];
+};

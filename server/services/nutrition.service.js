@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.js";
+import { recommendMealPlan } from "./meal.service.js";
 
 export const generateNutritionRecommendation = async (memberId) => {
   // Find member profile
@@ -12,30 +13,32 @@ export const generateNutritionRecommendation = async (memberId) => {
     throw new Error("Member not found.");
   }
 
-  // Find meal plans matching the member's goal
-  const mealPlans = await prisma.mealPlan.findMany({
-    where: {
-      goal: member.fitnessGoal,
-      isActive: true,
-    },
-  });
+  // Get the best meal plan for the member's fitness goal
+  const mealPlan = await recommendMealPlan(member.fitnessGoal);
 
-  if (mealPlans.length === 0) {
-    throw new Error("No suitable meal plans found.");
-  }
-
-  // Pick the first matching meal plan
-  const mealPlan = mealPlans[0];
-
-  // Save recommendation
-  await prisma.nutritionRecommendation.create({
+  // Save the recommendation
+  const recommendation = await prisma.nutritionRecommendation.create({
     data: {
       memberId: member.id,
       mealPlanId: mealPlan.id,
       recommendationScore: 100,
-      reason: "Matches your fitness goal.",
+      reason: `Recommended because your fitness goal is ${member.fitnessGoal}.`,
+    },
+    include: {
+      mealPlan: true,
+      member: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+            },
+          },
+        },
+      },
     },
   });
 
-  return mealPlan;
+  return recommendation;
 };

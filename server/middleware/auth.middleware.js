@@ -15,12 +15,7 @@ export const authenticate = async (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
 
-    console.log("Token:", token);
-    console.log("JWT Secret Exists:", !!process.env.JWT_SECRET);
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    console.log("Decoded Token:", decoded);
 
     const user = await prisma.user.findUnique({
       where: {
@@ -39,10 +34,6 @@ export const authenticate = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.log("========== JWT ERROR ==========");
-    console.log("Name:", error.name);
-    console.log("Message:", error.message);
-
     return res.status(401).json({
       success: false,
       message: error.message,
