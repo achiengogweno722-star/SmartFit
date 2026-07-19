@@ -6,7 +6,7 @@ const router = express.Router();
 
 // Generate workout recommendations for a member
 router.get(
-  "/:memberId",
+  "/",
   authenticate,
   getRecommendations
 );

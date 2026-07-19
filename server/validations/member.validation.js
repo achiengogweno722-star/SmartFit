@@ -28,6 +28,15 @@ export const memberProfileSchema = z.object({
     "GENERAL_FITNESS",
   ]),
 
+  availableDaysPerWeek: z
+    .number()
+    .int("Available days must be a whole number.")
+    .min(1, "Minimum is 1 day.")
+    .max(7, "Maximum is 7 days."),
+
+  // Added because your service uses it
+  preferredWorkoutTime: z.string(),
+
   medicalConditions: z.string().optional(),
 
   phoneNumber: z.string().optional(),
@@ -35,15 +44,8 @@ export const memberProfileSchema = z.object({
   address: z.string().optional(),
 
   emergencyContact: z.string().optional(),
-
-  // New field
-  availableDaysPerWeek: z
-    .number()
-    .int("Available days must be a whole number.")
-    .min(1, "Minimum is 1 day.")
-    .max(7, "Maximum is 7 days."),
 });
 
-// Update Member Profile Schema
+// Update schema
 export const updateMemberProfileSchema =
   memberProfileSchema.partial();
