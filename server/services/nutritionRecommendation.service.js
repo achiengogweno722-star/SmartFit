@@ -1,65 +1,64 @@
 import prisma from "../config/prisma.js";
 
-export const generateNutritionRecommendations = async (memberId) => {
-  // Find member profile using the USER ID
+export const generateNutritionRecommendations = async (userId) => {
+  // Find member profile using logged-in user's ID
   const member = await prisma.memberProfile.findUnique({
     where: {
-      userId: Number(memberId),
+      userId: Number(userId),
     },
   });
 
   if (!member) {
-    throw new Error("Member not found.");
+    throw new Error("Member profile not found.");
   }
 
-  // Get active meal plans
+  // Get all active meal plans
   const mealPlans = await prisma.mealPlan.findMany({
     where: {
       isActive: true,
     },
   });
 
-  // Remove previous recommendations
+  // Remove old recommendations
   await prisma.nutritionRecommendation.deleteMany({
     where: {
       memberId: member.id,
     },
   });
 
+  const recommendations = [];
+
   // Generate recommendations
   for (const meal of mealPlans) {
     let score = 0;
     const reasons = [];
 
-    // Goal Match
     if (meal.goal === member.fitnessGoal) {
       score += 100;
       reasons.push("Matches your fitness goal");
     }
 
-    await prisma.nutritionRecommendation.create({
-      data: {
-        memberId: member.id,
-        mealPlanId: meal.id,
-        recommendationScore: score,
-        reason:
-          reasons.length > 0
-            ? reasons.join(", ")
-            : "No matching fitness goal",
-      },
-    });
+    const recommendation =
+      await prisma.nutritionRecommendation.create({
+        data: {
+          memberId: member.id,
+          mealPlanId: meal.id,
+          recommendationScore: score,
+          reason:
+            reasons.length > 0
+              ? reasons.join(", ")
+              : "General healthy meal plan",
+        },
+        include: {
+          mealPlan: true,
+        },
+      });
+
+    recommendations.push(recommendation);
   }
 
-  // Return recommendations sorted by score
-  return await prisma.nutritionRecommendation.findMany({
-    where: {
-      memberId: member.id,
-    },
-    include: {
-      mealPlan: true,
-    },
-    orderBy: {
-      recommendationScore: "desc",
-    },
-  });
+  // Return highest scoring recommendations first
+  return recommendations.sort(
+    (a, b) => b.recommendationScore - a.recommendationScore
+  );
 };

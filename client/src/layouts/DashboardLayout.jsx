@@ -1,9 +1,10 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function DashboardLayout() {
   const navigate = useNavigate();
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  const { user, logout } = useAuth();
 
   const role = user?.role;
 
@@ -22,10 +23,7 @@ export default function DashboardLayout() {
       : "/admin/profile";
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("role");
-
+    logout();
     navigate("/login");
   };
 
@@ -38,7 +36,6 @@ export default function DashboardLayout() {
         </h1>
 
         <nav className="space-y-4">
-
           <Link
             to={dashboardPath}
             className="block rounded-lg px-4 py-3 hover:bg-blue-600 transition"
@@ -59,7 +56,6 @@ export default function DashboardLayout() {
           >
             Logout
           </button>
-
         </nav>
       </aside>
 

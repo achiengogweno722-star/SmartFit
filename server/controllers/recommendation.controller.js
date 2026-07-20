@@ -1,18 +1,15 @@
 import { generateRecommendations } from "../services/recommendation.service.js";
 
-// Generate Recommendations
+// Generate Workout Recommendations
 export const getRecommendations = async (req, res) => {
   try {
-    const memberId = Number(req.params.memberId);
+    // Debug: Check the logged-in user from the JWT
+    console.log("========== AUTH USER ==========");
+    console.log(req.user);
+    console.log("===============================");
 
-    if (isNaN(memberId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid member ID.",
-      });
-    }
-
-    const recommendations = await generateRecommendations(memberId);
+    // Generate recommendations using the logged-in user's ID
+    const recommendations = await generateRecommendations(req.user.id);
 
     res.status(200).json({
       success: true,
@@ -21,6 +18,8 @@ export const getRecommendations = async (req, res) => {
       recommendations,
     });
   } catch (error) {
+    console.error("Recommendation Error:", error);
+
     res.status(400).json({
       success: false,
       message: error.message,

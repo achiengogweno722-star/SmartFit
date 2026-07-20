@@ -3,10 +3,10 @@ import { generateNutritionRecommendations } from "../services/nutritionRecommend
 // Generate Nutrition Recommendations
 export const getNutritionRecommendations = async (req, res) => {
   try {
-    const { memberId } = req.params;
-
-    const recommendations =
-      await generateNutritionRecommendations(memberId);
+    // Use the logged-in user's ID instead of req.params
+    const recommendations = await generateNutritionRecommendations(
+      req.user.id
+    );
 
     res.status(200).json({
       success: true,

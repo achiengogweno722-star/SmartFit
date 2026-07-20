@@ -5,14 +5,19 @@ export default function ProtectedRoute({
   children,
   allowedRole,
 }) {
-  const { user, loading } = useAuth();
+  const { user, loading, isAuthenticated } = useAuth();
 
+  // Wait until authentication is loaded
   if (loading) {
-    return <h1 className="text-center mt-20">Loading...</h1>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <h1 className="text-xl font-semibold">Loading...</h1>
+      </div>
+    );
   }
 
-  // Not logged in
-  if (!user) {
+  // User not logged in
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 

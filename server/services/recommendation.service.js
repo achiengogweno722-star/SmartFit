@@ -1,15 +1,21 @@
 import prisma from "../config/prisma.js";
 
-export const generateRecommendations = async (memberId) => {
-  // Find member
+export const generateRecommendations = async (userId) => {
+  console.log("==================================");
+  console.log("Searching MemberProfile for userId:", userId);
+
+  // Find member profile using the logged-in user's ID
   const member = await prisma.memberProfile.findUnique({
     where: {
-      id: Number(memberId),
+      userId,
     },
   });
 
+  console.log("Member found:", member);
+  console.log("==================================");
+
   if (!member) {
-    throw new Error("Member not found.");
+    throw new Error("Member profile not found.");
   }
 
   // Get active workout plans
@@ -18,6 +24,8 @@ export const generateRecommendations = async (memberId) => {
       isActive: true,
     },
   });
+
+  console.log("Workout plans found:", workoutPlans.length);
 
   const recommendations = [];
 
@@ -28,6 +36,7 @@ export const generateRecommendations = async (memberId) => {
     },
   });
 
+  // Generate new recommendations
   for (const plan of workoutPlans) {
     let score = 0;
     const reasons = [];
@@ -74,6 +83,8 @@ export const generateRecommendations = async (memberId) => {
   recommendations.sort(
     (a, b) => b.recommendationScore - a.recommendationScore
   );
+
+  console.log("Recommendations generated:", recommendations.length);
 
   return recommendations;
 };
