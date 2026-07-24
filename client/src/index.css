@@ -10,6 +10,47 @@ body,
 }
 
 body {
-  background-color: #f8fafc;
+  background-color: #f5f3ff;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.dark body,
+.dark #root {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+.dark .bg-white {
+  background-color: #111827 !important;
+}
+
+.dark .bg-purple-50 {
+  background-color: #1f2937 !important;
+}
+
+.dark .bg-purple-700 {
+  background-color: #7c3aed !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-700,
+.dark .text-slate-500,
+.dark .text-slate-800 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-purple-800,
+.dark .text-purple-700,
+.dark .text-purple-600 {
+  color: #e9d5ff !important;
+}
+
+.dark .border-purple-100,
+.dark .border-purple-200,
+.dark .border-purple-300 {
+  border-color: #374151 !important;
+}
+
+.dark .ring-purple-100 {
+  box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.18) !important;
 }

@@ -15,4 +15,12 @@ router.get(
   getNutritionRecommendations
 );
 
+// Get nutrition recommendations for a specific member by admin or trainer
+router.get(
+  "/:memberId",
+  authenticate,
+  authorize("ADMIN", "TRAINER"),
+  getNutritionRecommendations
+);
+
 export default router;

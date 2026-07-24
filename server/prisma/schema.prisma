@@ -39,6 +39,33 @@ enum AttendanceStatus {
   ABSENT
 }
 
+enum MembershipStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PENDING
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ALERT
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
 model User {
   id       Int    @id @default(autoincrement())
   fullName String
@@ -80,6 +107,11 @@ model MemberProfile {
   // Assigned Workout Plan
   workoutPlanId Int?
 
+  // Membership Data
+  membershipStatus MembershipStatus @default(PENDING)
+  membershipStarted DateTime?
+  membershipExpires DateTime?
+
   user        User            @relation(fields: [userId], references: [id])
   trainer     TrainerProfile? @relation(fields: [trainerId], references: [id])
   workoutPlan WorkoutPlan?    @relation(fields: [workoutPlanId], references: [id])
@@ -98,6 +130,11 @@ model MemberProfile {
 
   // Attendance
   attendances Attendance[]
+
+  payments Payment[]
+  notifications Notification[]
+  appointments Appointment[]
+  qrcodes QRCode[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -119,6 +156,7 @@ model TrainerProfile {
   user User @relation(fields: [userId], references: [id])
 
   members MemberProfile[]
+  appointments Appointment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -158,6 +196,61 @@ model WorkoutPlan {
   @@index([difficulty])
   @@index([targetGoal])
   @@index([isActive])
+}
+
+model Payment {
+  id Int @id @default(autoincrement())
+  memberId Int
+  amount Float
+  currency String @default("USD")
+  status PaymentStatus @default(PENDING)
+  description String?
+  transactionId String?
+  paymentDate DateTime @default(now())
+
+  member MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id Int @id @default(autoincrement())
+  memberId Int
+  type NotificationType @default(INFO)
+  title String
+  message String
+  read Boolean @default(false)
+
+  member MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Appointment {
+  id Int @id @default(autoincrement())
+  memberId Int
+  trainerId Int
+  scheduledAt DateTime
+  status AppointmentStatus @default(PENDING)
+  notes String?
+
+  member MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  trainer TrainerProfile @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QRCode {
+  id Int @id @default(autoincrement())
+  memberId Int
+  code String @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  member MemberProfile @relation(fields: [memberId], references: [id], onDelete: Cascade)
 }
 
 model Exercise {

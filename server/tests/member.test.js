@@ -92,6 +92,10 @@ describe("Member Profile API", () => {
         preferredWorkoutTime: "Morning",
       });
 
+    if (response.status !== 201) {
+      console.log("member profile create failed", response.status, response.body);
+    }
+
     memberProfileId = response.body.profile.id;
 
     expect(response.status).toBe(201);

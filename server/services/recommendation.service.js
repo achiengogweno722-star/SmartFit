@@ -1,21 +1,21 @@
 import prisma from "../config/prisma.js";
 
-export const generateRecommendations = async (userId) => {
-  console.log("==================================");
-  console.log("Searching MemberProfile for userId:", userId);
+export const generateRecommendations = async (userId, requestedMemberId) => {
+  const query = requestedMemberId
+    ? { id: requestedMemberId }
+    : { userId };
 
-  // Find member profile using the logged-in user's ID
   const member = await prisma.memberProfile.findUnique({
-    where: {
-      userId,
-    },
+    where: query,
   });
 
   console.log("Member found:", member);
   console.log("==================================");
 
   if (!member) {
-    throw new Error("Member profile not found.");
+    throw new Error(
+      requestedMemberId ? "Member not found." : "Member profile not found."
+    );
   }
 
   // Get active workout plans

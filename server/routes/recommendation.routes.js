@@ -11,4 +11,10 @@ router.get(
   getRecommendations
 );
 
+router.get(
+  "/:memberId",
+  authenticate,
+  getRecommendations
+);
+
 export default router;

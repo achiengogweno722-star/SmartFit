@@ -3,9 +3,20 @@ import { generateNutritionRecommendations } from "../services/nutritionRecommend
 // Generate Nutrition Recommendations
 export const getNutritionRecommendations = async (req, res) => {
   try {
-    // Use the logged-in user's ID instead of req.params
+    const requestedMemberId = req.params.memberId
+      ? Number(req.params.memberId)
+      : undefined;
+
+    if (req.params.memberId && isNaN(requestedMemberId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid member ID.",
+      });
+    }
+
     const recommendations = await generateNutritionRecommendations(
-      req.user.id
+      req.user.id,
+      requestedMemberId
     );
 
     res.status(200).json({

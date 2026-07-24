@@ -1,15 +1,30 @@
 import prisma from "../config/prisma.js";
 
-export const generateNutritionRecommendations = async (userId) => {
-  // Find member profile using logged-in user's ID
-  const member = await prisma.memberProfile.findUnique({
-    where: {
-      userId: Number(userId),
-    },
-  });
+export const generateNutritionRecommendations = async (
+  userId,
+  requestedMemberId
+) => {
+  let member;
+
+  if (requestedMemberId) {
+    member = await prisma.memberProfile.findFirst({
+      where: {
+        OR: [
+          { id: requestedMemberId },
+          { userId: requestedMemberId },
+        ],
+      },
+    });
+  } else {
+    member = await prisma.memberProfile.findUnique({
+      where: { userId: Number(userId) },
+    });
+  }
 
   if (!member) {
-    throw new Error("Member profile not found.");
+    throw new Error(
+      requestedMemberId ? "Member not found." : "Member profile not found."
+    );
   }
 
   // Get all active meal plans

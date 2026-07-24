@@ -18,6 +18,10 @@ import mealRoutes from "./routes/meal.routes.js";
 import nutritionRecommendationRoutes from "./routes/nutritionRecommendation.routes.js";
 import attendanceRoutes from "./routes/attendance.routes.js";
 import nutritionRoutes from "./routes/nutrition.routes.js";
+import membershipRoutes from "./routes/membership.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
+import appointmentRoutes from "./routes/appointment.routes.js";
+import qrRoutes from "./routes/qr.routes.js";
 
 dotenv.config();
 
@@ -54,6 +58,10 @@ app.use(
 );
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/nutrition", nutritionRoutes);
+app.use("/api/memberships", membershipRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/qr", qrRoutes);
 
 // ==============================
 // Health Check

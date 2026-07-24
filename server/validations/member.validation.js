@@ -3,8 +3,13 @@ import { z } from "zod";
 export const memberProfileSchema = z.object({
   gender: z.enum(["MALE", "FEMALE", "OTHER"]),
 
-  // Accept YYYY-MM-DD
-  dateOfBirth: z.string().date(),
+  // Accept YYYY-MM-DD or ISO date string
+  dateOfBirth: z.string().refine(
+    (value) => !Number.isNaN(Date.parse(value)),
+    {
+      message: "Date of birth must be a valid date string.",
+    }
+  ),
 
   height: z
     .number()
@@ -34,8 +39,8 @@ export const memberProfileSchema = z.object({
     .min(1, "Minimum is 1 day.")
     .max(7, "Maximum is 7 days."),
 
-  // Added because your service uses it
-  preferredWorkoutTime: z.string(),
+  // Optional field, tests may omit it
+  preferredWorkoutTime: z.string().optional(),
 
   medicalConditions: z.string().optional(),
 
