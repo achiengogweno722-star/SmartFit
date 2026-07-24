@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
-import { saveProfile } from "../../services/member.service";
+
+import {
+  saveProfile,
+  getProfile,
+  updateProfile,
+} from "../../services/member.service";
 
 export default function MemberProfile() {
+  const { user } = useAuth();
   const [profile, setProfile] = useState({
     gender: "MALE",
     dateOfBirth: "",
@@ -20,65 +27,374 @@ export default function MemberProfile() {
 
   const [loading, setLoading] = useState(false);
 
+  const [editing, setEditing] = useState(false);
+const [profileExists, setProfileExists] = useState(false);
+
+useEffect(() => {
+  loadProfile();
+}, []);
+
   const handleChange = (e) => {
     setProfile((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
   };
+const loadProfile = async () => {
+  try {
+    const data = await getProfile();
 
+    setProfile(data.profile);
+
+    setProfileExists(true);
+
+    setEditing(false);
+  } catch (error) {
+    // No profile yet
+    setProfileExists(false);
+    setEditing(true);
+  }
+};
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      await saveProfile({
-        ...profile,
-        height: Number(profile.height),
-        weight: Number(profile.weight),
-        availableDaysPerWeek: Number(profile.availableDaysPerWeek),
-      });
+    const profileData = {
+      ...profile,
+      height: Number(profile.height),
+      weight: Number(profile.weight),
+      availableDaysPerWeek: Number(profile.availableDaysPerWeek),
+    };
 
-      toast.success("Profile saved successfully!");
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to save profile."
-      );
-    } finally {
-      setLoading(false);
+    if (profileExists) {
+      await updateProfile(profileData);
+      toast.success("Profile updated successfully!");
+    } else {
+      await saveProfile(profileData);
+      toast.success("Profile created successfully!");
     }
-  };
+
+    setProfileExists(true);
+    setEditing(false);
+
+    // Reload the latest profile from the server
+    loadProfile();
+  } catch (error) {
+    toast.error(
+      error.response?.data?.message ||
+      "Failed to save profile."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-slate-100 p-8">
 
       {/* Header */}
-      <section className="rounded-3xl bg-gradient-to-r from-violet-700 via-purple-600 to-indigo-600 text-white p-8 shadow-xl mb-8">
-        <div className="flex items-center justify-between">
+      <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-violet-700 via-purple-700 to-indigo-700 p-10 shadow-2xl text-white mb-8">
 
-          <div>
-            <p className="uppercase tracking-widest text-violet-200">
-              SMARTFIT MEMBER
-            </p>
+  {/* Decorative circles */}
 
-            <h1 className="text-4xl font-bold mt-2">
-              My Profile
-            </h1>
+  <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/10"></div>
 
-            <p className="mt-3 text-violet-100">
-              Manage your personal information and fitness preferences.
-            </p>
-          </div>
+  <div className="absolute bottom-0 left-0 h-24 w-24 rounded-full bg-white/10"></div>
 
-          <div className="hidden md:flex h-24 w-24 rounded-full bg-white/20 backdrop-blur items-center justify-center text-5xl">
-            👤
-          </div>
+  <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
 
-        </div>
-      </section>
+    {/* Left Side */}
 
-      <form onSubmit={handleSubmit}>
+    <div className="flex items-center gap-6">
+
+      <div className="h-28 w-28 rounded-full bg-white/20 border-4 border-white/30 shadow-xl flex items-center justify-center">
+
+  <span className="text-4xl font-extrabold text-white">
+    {user?.fullName
+  ? user.fullName
+      .split(" ")
+      .map((name) => name[0])
+      .join("")
+      .substring(0, 2)
+      .toUpperCase()
+  : "SM"}
+  </span>
+
+</div>
+
+      <div>
+
+        <p className="uppercase tracking-[0.3em] text-violet-200 text-sm">
+          SMARTFIT MEMBER
+        </p>
+
+        <h1 className="mt-2 text-5xl font-extrabold">
+  {user?.fullName || "SmartFit Member"}
+</h1>
+
+<p className="mt-2 text-xl text-violet-100">
+  Member Profile
+</p>
+
+        <p className="mt-3 text-violet-100">
+          Keep your personal information and fitness journey up to date.
+        </p>
+
+      </div>
+
+    </div>
+
+    {/* Right Side */}
+
+    <div className="grid grid-cols-2 gap-4">
+
+      <div className="rounded-2xl bg-white/10 backdrop-blur-md p-5 text-center">
+
+        <p className="text-violet-200 text-sm">
+          Goal
+        </p>
+
+        <h3 className="mt-2 text-lg font-bold">
+          {profile.fitnessGoal?.replaceAll("_"," ")}
+        </h3>
+
+      </div>
+
+      <div className="rounded-2xl bg-white/10 backdrop-blur-md p-5 text-center">
+
+        <p className="text-violet-200 text-sm">
+          Fitness Level
+        </p>
+
+        <h3 className="mt-2 text-lg font-bold">
+          {profile.fitnessLevel}
+        </h3>
+
+      </div>
+
+      <div className="rounded-2xl bg-white/10 backdrop-blur-md p-5 text-center">
+
+        <p className="text-violet-200 text-sm">
+          Height
+        </p>
+
+        <h3 className="mt-2 text-lg font-bold">
+          {profile.height} cm
+        </h3>
+
+      </div>
+
+      <div className="rounded-2xl bg-white/10 backdrop-blur-md p-5 text-center">
+
+        <p className="text-violet-200 text-sm">
+          Weight
+        </p>
+
+        <h3 className="mt-2 text-lg font-bold">
+          {profile.weight} kg
+        </h3>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+      {!editing ? (
+
+<div className="space-y-8">
+
+  <div className="bg-white rounded-3xl shadow-lg p-8">
+
+    <div className="flex justify-between items-center">
+
+      <div>
+
+        <h2 className="text-3xl font-bold text-slate-800">
+          Personal Profile
+        </h2>
+
+        <p className="text-slate-500 mt-2">
+          Your SmartFit information
+        </p>
+
+      </div>
+
+      <button
+        onClick={() => setEditing(true)}
+        className="bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-xl"
+      >
+        Edit Profile
+      </button>
+
+    </div>
+
+    <div className="space-y-6 mt-8">
+
+     
+
+  {/* Personal Information */}
+
+  <div className="bg-white rounded-3xl p-10 shadow-xl border border-gray-200 hover:shadow-2xl transition-all duration-300">
+
+    <h3 className="text-xl font-bold text-violet-700 mb-5">
+      👤 Personal Information
+    </h3>
+
+    <div className="space-y-5">
+
+     <div className="grid grid-cols-2 gap-4 items-start">
+       <p className="text-gray-500 font-medium"></p>
+       <p className="font-bold text-right break-words">{profile.gender}</p>
+      </div>
+
+     <div className="grid grid-cols-2 gap-4 items-start">
+       <p className="text-gray-500 font-medium"></p>
+        <p className="font-bold text-right break-words">
+           {profile.dateOfBirth
+  ? new Date(profile.dateOfBirth).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    })
+  : "-"}
+        </p>
+         
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 items-start">
+      <p className="text-gray-500 font-medium"></p>
+       <p className="font-bold text-right break-words">
+          {profile.phoneNumber || "-"}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 items-start">
+        <p className="text-gray-500 font-medium">Address</p>
+       <p className="font-bold text-right break-words">
+          {profile.address || "-"}
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+  {/* Body Metrics */}
+
+  <div className="bg-white rounded-3xl p-10 shadow-xl border border-gray-200 hover:shadow-2xl transition-all duration-300">
+
+    <h3 className="text-xl font-bold text-blue-700 mb-5">
+      📊 Body Metrics
+    </h3>
+
+    <div className="space-y-5">
+
+      <div className="grid grid-cols-2 gap-4 items-start">
+        <p className="text-gray-500 font-medium">Height</p>
+        <p className="font-bold text-right break-words">
+          {profile.height} cm
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 items-start">
+        <p className="text-gray-500 font-medium">Weight</p>
+        <p className="font-bold text-right break-words">
+          {profile.weight} kg
+        </p>
+      </div>
+
+     <div className="grid grid-cols-2 gap-4 items-start">
+        <p className="text-gray-500 font-medium">Fitness Level</p>
+       <p className="font-bold text-right break-words">
+          {profile.fitnessLevel}
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+{/* Fitness Goals */}
+
+<div className="bg-white rounded-3xl p-10 shadow-xl border border-gray-200 hover:shadow-2xl transition-all duration-300">
+
+  <h3 className="text-xl font-bold text-green-700 mb-5">
+    🎯 Fitness Goals
+  </h3>
+
+  <div className="space-y-5">
+
+    <div className="grid grid-cols-2 gap-4 items-start">
+      <p className="text-gray-500 font-medium">Goal</p>
+     <p className="font-bold text-right break-words">
+        {profile.fitnessGoal?.replaceAll("_", " ")}
+      </p>
+    </div>
+
+    <div className="grid grid-cols-2 gap-4 items-start">
+     <p className="text-gray-500 font-medium">Workout Days</p>
+     <p className="font-bold text-right break-words"> {profile.availableDaysPerWeek} days/week
+      </p>
+    </div>
+
+    <div className="grid grid-cols-2 gap-4 items-start">
+     <p className="text-gray-500 font-medium">Preferred Time</p>
+      <p className="font-bold text-right break-words">
+        {profile.preferredWorkoutTime}
+      </p>
+    </div>
+
+  </div>
+
+</div>
+{/* Medical Information */}
+
+<div className="bg-white rounded-3xl p-10 shadow-xl border border-gray-200 hover:shadow-2xl transition-all duration-300">
+
+  <h3 className="text-xl font-bold text-red-700 mb-5">
+    🚑 Medical Information
+  </h3>
+
+  <div className="space-y-5">
+
+    <div>
+      <p className="text-gray-500">
+        Medical Conditions
+      </p>
+
+      <p className="font-semibold mt-1">
+        {profile.medicalConditions || "None"}
+      </p>
+    </div>
+
+    <div className="pt-4 border-t">
+
+      <p className="text-gray-500">
+        Emergency Contact
+      </p>
+
+      <p className="font-semibold mt-1">
+        {profile.emergencyContact || "Not provided"}
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
+</div>
+    </div>
+
+
+</div>
+
+) : (
+
+<form onSubmit={handleSubmit}>
 
         <div className="grid lg:grid-cols-2 gap-8">
 
@@ -268,17 +584,34 @@ export default function MemberProfile() {
 
         </div>
 
-        <div className="mt-8">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-2xl bg-violet-700 py-4 text-lg font-semibold text-white transition hover:bg-violet-800"
-          >
-            {loading ? "Saving..." : "Save Profile"}
-          </button>
-        </div>
+        <div className="mt-8 flex gap-4">
 
+  <button
+    type="submit"
+    disabled={loading}
+    className="flex-1 rounded-2xl bg-violet-700 py-4 text-lg font-semibold text-white transition hover:bg-violet-800"
+  >
+    {loading
+      ? "Saving..."
+      : profileExists
+      ? "Update Profile"
+      : "Save Profile"}
+  </button>
+
+  {profileExists && (
+    <button
+      type="button"
+      onClick={() => setEditing(false)}
+      className="flex-1 rounded-2xl border border-slate-300 bg-white py-4 text-lg font-semibold hover:bg-slate-100"
+    >
+      Cancel
+    </button>
+  )}
+
+</div>
       </form>
+
+)}
 
     </div>
   );
